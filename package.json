@@ -1,0 +1,25 @@
+{
+  "name": "adminf",
+  "version": "0.0.1",
+  "description": "基于require,jquery的经典前端框架",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zqzyz/adminF.git"
+  },
+  "keywords": [
+    "admin",
+    "require",
+    "javascript",
+    "jquery"
+  ],
+  "author": "zqzyz0@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zqzyz/adminF/issues"
+  },
+  "homepage": "https://github.com/zqzyz/adminF#readme"
+}
