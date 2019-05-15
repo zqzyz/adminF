@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Demo</title>
+	</head>
+	<body>
+        <h1>动态组件演示</h1>
+        <div id="app">
+            <input type="button" value="动态加载组件3" @click="list.push(
+                {id:3,name:'name-3',component:'./components/component3.js'}
+            )" />
+            <component v-for="item in list" :is="getComponent" :data="item" :key="item.id"></component>
+        </div>
+	</body>
+	<script src="https://cdn.bootcss.com/vue/2.6.10/vue.js"></script>
+    <script src="https://cdn.bootcss.com/require.js/2.3.6/require.js"></script>
+    <script>
+        new Vue({
+            el:"#app",
+            data:function(){
+                return {
+                    list:[
+                        {id:1,name:'name-1',component:"./components/component1.js"},
+                        {id:2,name:'name-2',component:"./components/component2.js"}
+                    ]
+                }
+            },
+            methods:{
+                getComponent:function(resolve){
+                    return new Promise(function(resolve1,reject1){
+                        resolve1({
+                            props:["data"],
+                            data:function(){
+                                return {
+                                    
+                                }
+                            },
+                            methods:{
+                                getComponent:function(){
+                                    var data = this.data;
+                                    return new Promise(function(resolve2,reject2){
+                                        requirejs([data.component],function(component){
+                                            resolve2(component);
+                                        });
+                                    });
+                                }
+                            },
+                            template: '<component :is="getComponent" :data="data"></component>'
+                        });
+                    });
+                }
+            }
+        })
+    </script>
+</html>

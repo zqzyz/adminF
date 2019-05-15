@@ -1,0 +1,21 @@
+{
+  "passWord": "e10adc3949ba59abbe56e057f20f883e",
+  "deptName": "研发部",
+  "userGid": "EE706C08E3AD460FB0F35B09AA318C33",
+  "deptGid": "831267D5D0234ADBB6303A171D8F9EF6",
+  "roleqxFpList": [],
+  "orgBm": "0405",
+  "orgGid": "D4047F0BDBDA48F1897B9DD941CFE100",
+  "zgbm4018": 40000117,
+  "clientIpAddress": "192.168.1.25",
+  "sxh": 9,
+  "orgName": "开元仪器股份有限公司",
+  "userName": "朱强",
+  "queryCompid": "'0405'",
+  "userId": "zq",
+  "isUsed": 1,
+  "compId": "0405",
+  "dzzqxFpList": [],
+  "userType": 0,
+  "zgdept": "831267D5D0234ADBB6303A171D8F9EF6"
+}

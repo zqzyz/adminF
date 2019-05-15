@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+    <title>Demo</title>
+    <link type="text/css" rel="stylesheet" href="https://cdn.bootcss.com/iview/3.4.1/styles/iview.css">
+    <style>
+        html,body{margin:0;width:100%;height:100%;}
+        .webpart-wrap{
+            width:100%;height:100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .webpart-content-wrap{
+            padding:10px;
+            padding-right:0px;
+            padding-top:0px;
+            padding-bottom:0px;
+            flex-grow: 100;
+            overflow: auto;
+        }
+        .webpart-content{
+            display: flex;
+            flex-direction: row;/* | row-reverse | column | column-reverse;*/
+        }
+        .webpart-item{
+            margin-bottom:10px;
+            width:30%;
+            padding-right:10px;
+            height: 100px;
+            min-height: 100px;
+            overflow:auto;
+            flex-grow: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;/* | row-reverse | column | column-reverse;*/
+        }
+        .webpart-item .webpart-item-editor{
+            display: none;
+            padding:20px;
+            border: 1px solid #ccc;
+        }
+        .webpart-item-title{
+            padding:10px;
+            background:#eee;
+            border: 1px solid #ccc;
+            border-bottom: 0;
+        }
+        .webpart-item-content{
+            font-size: 0px;
+            flex-grow: 8;
+            overflow: hidden;
+            border: 1px solid #ccc;
+        }
+        .webpart-item.editing .webpart-item-editor{
+            display: block;
+            flex-grow: 8;
+        }
+        .webpart-content .webpart-item.editing .webpart-item-title,
+        .webpart-content .webpart-item.editing .webpart-item-content{
+            display: none;
+        }
+
+        .webpart-item-content iframe{
+            width:100%;
+            border:0px;
+            height:100%;
+        }
+        .editor-btn:hover{background: #eee;}
+        ul.cjlistBox{
+            display: flex;
+            flex-direction: row;
+            padding:10px;
+            overflow: auto;
+            font-size:16px;
+        }
+        ul.cjlistBox li{
+            margin-right:5px;
+            list-style: none;
+            padding:10px;
+            width:auto;
+            border :1px solid #ccc;
+            flex-grow: 0;
+            flex-shrink:0;
+            text-align: center;
+            cursor: pointer;
+        }
+        ul.cjlistBox li.selected{
+            background:#568EFF;
+            color:#fff;
+        }
+        .ivu-form-item{
+            margin-bottom:2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" style="display:flex;flex-direction: column;">
+        <div>
+            <input id="canEdit" type="checkbox" v-model="canEdit" /><label for="canEdit">可编辑</label>
+            <div>{{canEdit}}</div>
+        </div>
+        <div style="flex-grow: 1;flex-shrink:1;">
+            <webpart :can-edit="canEdit" :alllist="alllist" :list="list"></webpart>
+        </div>
+    </div>
+</body>
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.js"></script>
+<script src="https://cdn.bootcss.com/vue/2.6.10/vue.js"></script>
+<script src="https://cdn.bootcss.com/iview/3.4.1/iview.js"></script>
+<script src="https://cdn.bootcss.com/ramda/0.26.1/ramda.js"></script>
+
+<script>
+    var template = `
+    <div class="webpart-wrap">
+        <div>{{canEdit}}</div>
+        <div v-if="canEdit">
+            <div class="editor-btn" title="编辑" @click="editing=!editing" style="line-height: 1;text-align: center;padding-right: 5px;cursor: pointer;">
+                <Icon :type="editing?'ios-arrow-up':'ios-arrow-down'" />
+            </div>
+            <div v-if="editing" class="webpart-setting" style="flex-grow: 0;">
+                <ul class="cjlistBox">
+                    <li @click="isSelected(item)?delItem(item.id):addItem(item)" :class="{selected:isSelected(item)}" v-for="(item,index) in alllist">{{item.title}}
+                        <Icon type="ios-checkmark-circle" />
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="webpart-content-wrap">
+            <div class="webpart-content"
+                :class="{
+                    'editing':editing
+                }"
+            style="
+                flex-wrap:wrap;
+                justify-content:flex-start;
+                align-content: flex-start;
+            " :style="{
+                flexDirection:'row',
+                paddingTop:canEdit?'0':'10px'
+            }">
+                <div class="webpart-item" v-for="(item,index) in list"
+                    :key="item.id"
+                    :class="{editing:editingItem == item}"
+                    @mouseenter="hoverItem = item"
+                    @mouseleave="hoverItem = null"
+                    :style="{
+                        order:item.order,
+                        width:getItemWidth(item),
+                        height:item.height
+                    }">
+                    <div v-if="canEdit" class="webpart-item-editor" style="overflow:auto;">
+                        <i-Form :label-width="40">
+                            <Form-Item label="标题">
+                                <i-Input type="text" v-model="item.title"></i-Input>
+                            </Form-Item>
+                            <Form-Item label="序号">
+                                <i-Input type="number" v-model="item.order"></i-Input>
+                            </Form-Item>
+                            <Form-Item label="列数">
+                                <i-select v-model="item.width">
+                                    <i-option :value="1">1</i-option>
+                                    <i-option :value="2">2</i-option>
+                                    <i-option :value="3">3</i-option>
+                                    <i-option :value="4">4</i-option>
+                                </i-select>
+                            </Form-Item>
+                            <Form-Item label="高度">
+                                <i-Input type="text" v-model="item.height"></i-Input>
+                            </Form-Item>
+                            <Form-Item style="text-align:center;">
+                                <i-Button type="primary" @click="delItem(item.id)" >删除</i-Button>
+                                <!--
+                                <i-Button type="primary" @click="addItemBefore(item,index-1)" >向前插入</i-Button>
+                                <i-Button type="primary" @click="addItemAfter(item,index+2)" >向后插入</i-Button>
+                                -->
+                                <i-Button type="primary" @click="editingItem = null" >确定</i-Button>
+                                <i-Button type="primary" @click="editingItem = null" >取消</i-Button>
+                            </Form-Item>
+                        </i-Form>
+                    </div>
+                    <div class="webpart-item-title">
+                        <input v-if="canEdit" v-model="item.title" style="border: 0px;background: transparent;">
+                        <span v-else>{{item.title}}</span>
+                    </div>
+                    <div v-if="item == hoverItem && editingItem !== item && canEdit" class="webpart-item-toolbar" style="position: absolute;right: 15px;top: 10px;">
+                        <Icon type="md-close" @click="delItem(item.id)" ></Icon>
+                        <Icon type="md-settings" @click="editingItem = item" ></Icon>
+                    </div>
+                    <div class="webpart-item-content">
+                        <iframe v-if="item.url" :src="item.url" ></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    `
+    var webpart = {
+        props:{
+            "alllist":{
+                default:[]
+            },
+            "list":{
+                default:[]
+            },
+            "canEdit":{
+                default:true
+            }
+        },
+        template:template,
+        data:function(){
+            return {
+                editing:false,
+                hoverItem:null,
+                editingItem:null,
+                columnCount:4
+            }
+        },
+        computed:{
+            columnWidth:function(){
+                return 100/this.columnCount;
+            }
+        },
+        methods:{
+            getItemWidth:function(item){
+                return (item.width*this.columnWidth>100?100:item.width*this.columnWidth)+"%"
+            },
+            getItemIndex:function(id){
+                for(var i =0;i<this.list.length;i++){
+                    if(this.list[i].id == id){
+                        return i;
+                    }
+                }
+            },
+            delItem:function(id){
+                var index = this.getItemIndex(id);
+                this.list.splice(index,1);
+            },
+            addItem:function(item,index){
+                if(index>-1){
+                    this.list.splice(index,0,item);
+                }else{
+                    this.list.push(item);
+                }
+            },
+            addItemAfter:function(item,index){
+                this.addItem({
+                    id:Date.now().toString(),
+                    width:1,height:"200px",order:item.order
+                },index+1)
+            },
+            addItemBefore:function(item,index){
+                this.addItem({
+                    id:Date.now().toString(),
+                    width:this.columnCount,height:"200px",order:item.order
+                },index)
+            },
+            isSelected:function(item){
+                return this.list.filter(function(iitem){
+                    return iitem.id == item.id;
+                }).length>0;
+            },
+            save:function(){
+
+            }
+        }
+    }
+    
+    Vue.use(iview, {
+        transfer: true,
+        size: 'small',
+        select: {
+            arrow: 'md-arrow-dropdown',
+            arrowSize: 20
+        }
+    });
+
+    var obj = new Vue({
+        el:"#app",
+        data:{
+            canEdit:false,
+            list:[
+                {title:"插件1",id:1,width:1,height:"200px",order:1},
+                {title:"插件1",id:2,width:1,height:"200px",order:1,url:"index2.html"},
+                {title:"插件1",id:3,width:2,height:"200px",order:1},
+                {title:"插件1",id:4,width:2,height:"200px",order:1},
+                {title:"插件1",id:5,width:2,height:"200px",order:1},
+                {title:"插件1",id:6,width:4,height:"200px",order:1},
+                {title:"插件1",id:7,width:4,height:"200px",order:2},
+                {title:"插件1",id:8,width:4,height:"200px",order:3},
+                {title:"插件1",id:9,width:2,height:"200px",order:4},
+                {title:"插件1",id:10,width:2,height:"200px",order:5},
+                {title:"插件1",id:11,width:4,height:"200px",order:6}
+            ],
+            alllist:[
+                {title:"插件1",id:1,width:1,height:"200px",order:1},
+                {title:"插件1",id:2,width:1,height:"200px",order:1,url:"index2.html"},
+                {title:"插件1",id:3,width:2,height:"200px",order:1},
+                {title:"插件1",id:4,width:2,height:"200px",order:1},
+                {title:"插件1",id:5,width:2,height:"200px",order:1},
+                {title:"插件1",id:6,width:4,height:"200px",order:1},
+                {title:"插件1",id:7,width:4,height:"200px",order:2},
+                {title:"插件1",id:8,width:4,height:"200px",order:3},
+                {title:"插件1",id:9,width:2,height:"200px",order:4},
+                {title:"插件1",id:10,width:2,height:"200px",order:5},
+                {title:"插件1",id:11,width:4,height:"200px",order:6}
+            ]
+        },
+        components:{webpart:webpart}
+    });
+</script>
+</html>

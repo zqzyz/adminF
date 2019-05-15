@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+    <title>Demo</title>
+    <style>
+        textarea{width:600px;height:200px;}
+    </style>
+</head>
+<body>
+<textarea id="text"></textarea>
+<div>
+    <button onclick="TextToCode2()">ToCode</button>
+    <button onclick="Code2ToText()">ToText</button>
+</div>
+<textarea id="code"></textarea>
+<div>
+    <button onclick="TextToCode16()">TextToCode16</button>
+    <button onclick="Code16ToText()">Code16ToText</button>
+</div>
+<textarea id="code16"></textarea>
+<script>
+    var text = document.getElementById("text");
+    var code = document.getElementById("code");
+    var code16 = document.getElementById("code16");
+    var TextToCode2=function(){
+        code.value = strToBinary(text.value);
+        code16.value = binary2To16(code.value);
+    }
+    var Code2ToText=function(){
+        text.value = binaryToStr(code.value);
+    }
+
+    function strToBinary(str){
+        var result = [];
+        var list = str.split("");
+        for(var i=0;i<list.length;i++){
+            var item = list[i];
+            var binaryStr = item.charCodeAt().toString(2);
+            var charlen = Math.ceil((binaryStr.length)/8);
+            if(charlen==1){
+                result.push(binaryStr.padStart(8,"0"))
+            }else{
+                result.push("1".repeat(charlen).padEnd(8,"0") + binaryStr.padStart(charlen*8,"0"))
+            }
+        }
+        result=result.join("");
+        var rev = [];
+        for(var i=0;i<result.length;i+=8){
+            rev.push(result.substr(i,8));
+        }
+        return rev.join(" ");
+    }
+    function binaryToStr(str){
+        str = str.replace(/ /g,"");
+        var result = [];
+        if(str.length%8!==0){return "error"}
+        var item = "";
+        for(var i=0;i<str.length;i+=8){
+            item = str.substr(i,8);
+            if(str[i]=="1"){
+                var charlen = item.indexOf(0);
+                item=str.substr(i+8,charlen*8)
+                i+=(charlen)*8;
+            }
+            console.log(item,String.fromCharCode(parseInt(item,2)));
+            result.push(String.fromCharCode(parseInt(item,2)))
+        }
+        return result.join("");
+    }
+    function binary2To16(str){
+        var rev = [];
+        for(var i=0;i<str.length;i+=8){
+            rev.push(parseInt(str.substr(i,8),2).toString(16).padStart(2,"0"));
+        }
+        return rev.join(" ");
+    }
+</script>
+</body>
+<script src="/dist/adminF.js"></script>
+</html>

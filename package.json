@@ -4,6 +4,10 @@
   "description": "基于require,jquery的经典前端框架",
   "main": "index.js",
   "scripts": {
+    "build:dev": "webpack --mode development",
+    "build": "webpack --mode production",
+    "watch": "webpack --watch",
+    "dev": "webpack-dev-server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,6 +20,7 @@
     "javascript",
     "jquery"
   ],
+  "types": "index",
   "author": "zqzyz0@gmail.com",
   "license": "MIT",
   "bugs": {
@@ -23,9 +28,16 @@
   },
   "homepage": "https://github.com/zqzyz/adminF#readme",
   "devDependencies": {
+    "@types/node": "^11.13.8",
+    "@types/ramda": "^0.26.8",
+    "css-loader": "^2.1.1",
+    "express": "^4.16.4",
+    "ramda": "^0.26.1",
+    "style-loader": "^0.23.1",
     "ts-loader": "^5.3.3",
     "typescript": "^3.4.3",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.3.0"
-  }
+  },
+  "dependencies": {}
 }

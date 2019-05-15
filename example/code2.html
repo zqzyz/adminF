@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+    <title>Demo</title>
+    <script src="crypto/core.js"></script>
+    <script src="crypto/sha1.js"></script>
+    <script src="crypto/enc-utf16.js"></script>
+    <script src="crypto/enc-base64.js"></script>
+    <style>
+        textarea{width:600px;height:200px;}
+    </style>
+</head>
+<body>
+<textarea id="text"></textarea>
+<div>
+    <select id="from">
+        <option value="Utf8">Utf8</option>
+    </select>
+    <button onclick="run()">encodeBase64</button>
+    <select id="to">
+        <option value="Base64">Base64</option>
+    </select>
+</div>
+<textarea id="code"></textarea>
+<script>
+    var text = document.getElementById("text");
+    var code = document.getElementById("code");
+    var code16 = document.getElementById("code16");
+    var from = document.getElementById("from");
+    var to = document.getElementById("to");
+    var run = function(){
+        converter(from.value,to.value);
+    }
+    var converter=function(from,to){
+        var str = CryptoJS.enc[from].parse(text.value);
+        code.value = CryptoJS.enc[to].stringify(str);
+    }
+</script>
+</body>
+<script src="/dist/adminF.js"></script>
+</html>
